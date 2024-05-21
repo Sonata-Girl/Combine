@@ -10,7 +10,7 @@ import Combine
 
 struct ContentView: View {
     var body: some View {
-        FirstPipelineView()
+        MagazineView()
     }
 }
 
@@ -18,77 +18,101 @@ struct ContentView: View {
     ContentView()
 }
 
-struct FirstPipelineView: View {
+struct MagazineView: View {
 
-    @StateObject var viewModel = FirstPipelineViewModel()
+    @StateObject var viewModel = MagazineViewModel()
 
     var body: some View {
         VStack {
-            Spacer()
-            Text(viewModel.data)
-                .font(.title)
-                .foregroundStyle(.green)
-            Text(viewModel.status)
-                .foregroundStyle(.blue)
-
-            Spacer()
-
-            Button {
-                viewModel.cancel()
-            } label: {
-                Text("Отменить подписку")
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
+            ForEach(viewModel.goods.indices, id: \.self) { productIndex in
+                HStack {
+                    Text(viewModel.goods[productIndex].name)
+                    Text("\(viewModel.goods[productIndex].price)")
+                    Button {
+                        viewModel.selectionForAddCheck = productIndex
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    Button {
+                        viewModel.selectionForRemoveCheck = productIndex
+                    } label: {
+                        Image(systemName: "minus")
+                    }
+                }
+                .padding()
             }
-            .background(.red)
-            .cornerRadius(8)
-            .opacity(viewModel.status == "Запрос в банк..." ? 1.0 : 0.0)
 
-            Button {
-                viewModel.refresh()
-            } label: {
-                Text("Запрос данных")
-                    .padding(.vertical, 8)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal)
+            Spacer()
+            VStack {
+                Text("Чек")
+                ForEach(viewModel.checkGoods.indices, id: \.self) { productIndex in
+                    HStack {
+                        Text(viewModel.checkGoods[productIndex].name)
+                        Spacer()
+                        Text("\(viewModel.checkGoods[productIndex].price)")
+                    }
+                }
+                Text("Итоговая сумма: \(viewModel.checkSum)")
             }
-            .background(.blue)
-            .cornerRadius(8)
             .padding()
+            Button {
+                viewModel.clearCheck()
+            } label: {
+                Text("Очистить корзину")
+            }
         }
-        .padding()
-
     }
 }
 
-final class FirstPipelineViewModel: ObservableObject {
-    @Published var data = ""
-    @Published var status = ""
-    @Published var validation = ""
+struct Good {
+    let name: String
+    let price: Int
+}
 
-    private var cancellable: AnyCancellable?
+final class MagazineViewModel: ObservableObject {
+    @Published var goods: [Good] = []
+    @Published var checkGoods: [Good] = []
+    @Published var selectionForAddCheck: Int?
+    @Published var selectionForRemoveCheck: Int?
+    @Published var checkSum: Int = 0
+
+    private var validationCancellables: Set<AnyCancellable> = []
 
     init() {
-        cancellable = $data
-            .map { [unowned self] value -> String in
-                self.status = "Запрос в банк..."
-                return value
+        goods = [.init(name: "Хлеб", price: 40),
+                 .init(name: "Масло", price: 150),
+                 .init(name: "Помидоры", price: 200),
+                 .init(name: "Огурцы", price: 150),
+                 .init(name: "Икра", price: 1300)]
+
+        $selectionForAddCheck
+            .map { [unowned self] selectedIndex -> Good in
+                goods[selectedIndex ?? 0]
             }
-            .delay(for: 5, scheduler: DispatchQueue.main)
+            .filter {
+                $0.price < 1000
+            }
             .sink { [unowned self] value in
-                self.data = "Сумма всех счетов 1 млн."
-                self.status = "Данные получены."
-
+                checkGoods.append(value)
             }
+            .store(in: &validationCancellables)
+
+        $selectionForRemoveCheck
+            .sink { [unowned self] selectedIndex in
+                checkGoods.remove(at: selectedIndex ?? 0)
+            }
+            .store(in: &validationCancellables)
+
+        $checkGoods
+            .map { $0.reduce(0) { $0 + $1.price } }
+            .scan(0) { total, newSubtotal in
+                100 + newSubtotal
+            }
+            .assign(to: \.checkSum, on: self)
+            .store(in: &validationCancellables)
     }
 
-    func refresh() {
-        data = "Перезапрос данных"
-    }
-
-    func cancel() {
-        status = "Операция отменена"
-        cancellable?.cancel()
-        cancellable = nil
+    func clearCheck() {
+        checkGoods.removeAll()
     }
 }

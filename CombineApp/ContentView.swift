@@ -23,29 +23,30 @@ struct FirstPipelineView: View {
     @StateObject var viewModel = FirstPipelineViewModel()
 
     var body: some View {
-        HStack {
+        VStack {
             TextField("Ваше имя", text: $viewModel.name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            TextField("Ваша фамилия", text: $viewModel.surname)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             Text(viewModel.validation)
         }
         .padding()
-        Text("Hello, \(viewModel.name)")
+        Text("Hello, \(viewModel.name) \(viewModel.surname)")
     }
 }
 
-class FirstPipelineViewModel: ObservableObject {
+final class FirstPipelineViewModel: ObservableObject {
     @Published var name = "..."
+    @Published var surname = "..."
     @Published var validation = ""
 
     init() {
         $name
-            .map { $0.isEmpty ? "X" : "V"}
+            .map { $0.isEmpty || self.surname.isEmpty ? "❌" : "✅"}
             .assign(to: &$validation)
-    }
-}
 
-struct FirstPipelineView_Previews: PreviewProvider {
-    static var previews: some View {
-        FirstPipelineView()
+        $surname
+            .map { $0.isEmpty || self.name.isEmpty ? "❌" : "✅"}
+            .assign(to: &$validation)
     }
 }

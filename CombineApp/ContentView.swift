@@ -32,6 +32,10 @@ struct FirstPipelineView: View {
         }
         .padding()
         Text("Hello, \(viewModel.name) \(viewModel.surname)")
+        Button("Отмена подписки") {
+            viewModel.validation = ""
+            viewModel.anyCancellable?.cancel()
+        }
     }
 }
 
@@ -40,13 +44,20 @@ final class FirstPipelineViewModel: ObservableObject {
     @Published var surname = "..."
     @Published var validation = ""
 
-    init() {
-        $name
-            .map { $0.isEmpty || self.surname.isEmpty ? "❌" : "✅"}
-            .assign(to: &$validation)
+    var anyCancellable: AnyCancellable?
 
-        $surname
+    init() {
+        anyCancellable = $name
+            .map { $0.isEmpty || self.surname.isEmpty ? "❌" : "✅"}
+            .sink { value in
+                self.validation = value
+
+            }
+        anyCancellable = $surname
             .map { $0.isEmpty || self.name.isEmpty ? "❌" : "✅"}
-            .assign(to: &$validation)
+            .sink { value in
+                self.validation = value
+
+            }
     }
 }

@@ -10,7 +10,7 @@ import Combine
 
 struct ContentView: View {
     var body: some View {
-        CurrentValueSubjectView()
+        GuessNumberView()
     }
 }
 
@@ -18,53 +18,68 @@ struct ContentView: View {
     ContentView()
 }
 
-struct CurrentValueSubjectView: View {
+struct GuessNumberView: View {
 
-    @StateObject private var viewModel = CurrentValueSubjectViewModel()
+    @StateObject private var viewModel = GuessNumberViewModel()
+    @State private var showNumber = false
 
     var body: some View {
         VStack {
-            Text("\(viewModel.selectionSame.value ? "Два раза выбрали" : "") \(viewModel.selection.value)")
-                .foregroundStyle(viewModel.selectionSame.value ? .red : .green)
+            Spacer()
+            TextField("Введите любое число", text: $viewModel.selection.value)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.numberPad)
                 .padding()
-            Button("Выбрать колу") {
-                viewModel.selection.value = "Кола"
+            Button("Завершить игру") {
+                showNumber.toggle()
+                viewModel.cancelGame()
             }
-            .padding()
-            Button("Выбрать бургер") {
-                // аналог  viewModel.selection.value = "Кола"
-                viewModel.selection.send("Бургер")
+            Spacer()
+            if viewModel.numberText.value == 2 {
+                Text("Введенное число больше загаданного")
+            } else if viewModel.numberText.value == 3 {
+                Text("Введенное число меньше загаданного")
+            } else if viewModel.numberText.value == 1 {
+                Text("Вы угадали!")
             }
-            .padding()
+            if showNumber {
+                Text("Загаданное число: \(viewModel.guessNumber.value)")
+            }
         }
     }
 }
 
-final class CurrentValueSubjectViewModel: ObservableObject {
+final class GuessNumberViewModel: ObservableObject {
 
-    // этот паблишер требует тип который он будет хранить и какуюто ошибку обычно
-    // в данном случае Never - говорит о том что он ошибки не обрабатывает(обычно его и используют)
-    var selection = CurrentValueSubject<String, Never>("Корзина пуста")
-    var selectionSame = CurrentValueSubject<Bool, Never>(false)
-
+    var selection = CurrentValueSubject<String, Never>("0")
+    var guessNumber = CurrentValueSubject<Int, Never>(Int.random(in: 1...100))
+    var numberText = CurrentValueSubject<Int, Never>(0)
     var cancellable: Set<AnyCancellable> = []
 
     init() {
         selection
-            .map { [unowned self] newValue -> Bool in
-                if newValue == selection.value {
-                    return true
+            .map { [unowned self] newValue -> Int in
+                if Int(newValue) ?? 0 == guessNumber.value {
+                    return 1
+                } else if Int(newValue) ?? 0 > guessNumber.value {
+                    return 2
+                } else if Int(newValue) ?? 0 < guessNumber.value {
+                    return 3
                 } else {
-                    return false
+                    return 0
                 }
             }
+            .delay(for: 0.8, scheduler: DispatchQueue.main)
             .sink { [unowned self] value in
-                print(value)
-                selectionSame.value = value
+                numberText.value = value
                 // запускаем обновление UI
                 objectWillChange.send()
             }
             .store(in: &cancellable)
+    }
+
+    func cancelGame() {
+        cancellable.removeAll()
     }
 }
 

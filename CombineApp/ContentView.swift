@@ -10,7 +10,7 @@ import Combine
 
 struct ContentView: View {
     var body: some View {
-        FirstPipelineView()
+        CurrentValueSubjectView()
     }
 }
 
@@ -18,77 +18,113 @@ struct ContentView: View {
     ContentView()
 }
 
-struct FirstPipelineView: View {
+struct CurrentValueSubjectView: View {
 
-    @StateObject var viewModel = FirstPipelineViewModel()
+    @StateObject private var viewModel = CurrentValueSubjectViewModel()
 
     var body: some View {
         VStack {
-            Spacer()
-            Text(viewModel.data)
-                .font(.title)
-                .foregroundStyle(.green)
-            Text(viewModel.status)
-                .foregroundStyle(.blue)
-
-            Spacer()
-
-            Button {
-                viewModel.cancel()
-            } label: {
-                Text("Отменить подписку")
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
+            Text("\(viewModel.selectionSame.value ? "Два раза выбрали" : "") \(viewModel.selection.value)")
+                .foregroundStyle(viewModel.selectionSame.value ? .red : .green)
+                .padding()
+            Button("Выбрать колу") {
+                viewModel.selection.value = "Кола"
             }
-            .background(.red)
-            .cornerRadius(8)
-            .opacity(viewModel.status == "Запрос в банк..." ? 1.0 : 0.0)
-
-            Button {
-                viewModel.refresh()
-            } label: {
-                Text("Запрос данных")
-                    .padding(.vertical, 8)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal)
+            .padding()
+            Button("Выбрать бургер") {
+                // аналог  viewModel.selection.value = "Кола"
+                viewModel.selection.send("Бургер")
             }
-            .background(.blue)
-            .cornerRadius(8)
             .padding()
         }
-        .padding()
-
     }
 }
 
-final class FirstPipelineViewModel: ObservableObject {
-    @Published var data = ""
-    @Published var status = ""
-    @Published var validation = ""
+final class CurrentValueSubjectViewModel: ObservableObject {
 
-    private var cancellable: AnyCancellable?
+    // этот паблишер требует тип который он будет хранить и какуюто ошибку обычно
+    // в данном случае Never - говорит о том что он ошибки не обрабатывает(обычно его и используют)
+    var selection = CurrentValueSubject<String, Never>("Корзина пуста")
+    var selectionSame = CurrentValueSubject<Bool, Never>(false)
+
+    var cancellable: Set<AnyCancellable> = []
 
     init() {
-        cancellable = $data
-            .map { [unowned self] value -> String in
-                self.status = "Запрос в банк..."
-                return value
+        selection
+            .map { [unowned self] newValue -> Bool in
+                if newValue == selection.value {
+                    return true
+                } else {
+                    return false
+                }
             }
-            .delay(for: 5, scheduler: DispatchQueue.main)
             .sink { [unowned self] value in
-                self.data = "Сумма всех счетов 1 млн."
-                self.status = "Данные получены."
-
+                print(value)
+                selectionSame.value = value
+                // запускаем обновление UI
+                objectWillChange.send()
             }
-    }
-
-    func refresh() {
-        data = "Перезапрос данных"
-    }
-
-    func cancel() {
-        status = "Операция отменена"
-        cancellable?.cancel()
-        cancellable = nil
+            .store(in: &cancellable)
     }
 }
+
+
+//PUBLISHED //////////////////
+
+//import SwiftUI
+//import Combine
+//
+//struct ContentView: View {
+//    var body: some View {
+//        CurrentValueSubjectView()
+//    }
+//}
+//
+//#Preview {
+//    ContentView()
+//}
+//
+//struct CurrentValueSubjectView: View {
+//
+//    @StateObject private var viewModel = CurrentValueSubjectViewModel()
+//
+//    var body: some View {
+//        VStack {
+//            Text("\(viewModel.selectionSame ? "Два раза выбрали" : "") \(viewModel.selection)")
+//                .foregroundStyle(viewModel.selectionSame ? .red : .green)
+//                .padding()
+//            Button("Выбрать колу") {
+//                viewModel.selection = "Кола"
+//            }
+//            .padding()
+//            Button("Выбрать бургер") {
+//                viewModel.selection = "Бургер"
+//            }
+//            .padding()
+//        }
+//    }
+//}
+//
+//final class CurrentValueSubjectViewModel: ObservableObject {
+//
+//    @Published var selection = "Корзина пуста"
+//    @Published var selectionSame = false
+//
+//    var cancellable: Set<AnyCancellable> = []
+//
+//    init() {
+//        $selection
+//            .map { [unowned self] newValue -> Bool in
+//                if newValue == selection {
+//                    return true
+//                } else {
+//                    return false
+//                }
+//            }
+//            .sink { [unowned self] value in
+//                print(value)
+//                selectionSame = value
+//            }
+//            .store(in: &cancellable)
+//    }
+//}

@@ -86,27 +86,40 @@ final class MagazineViewModel: ObservableObject {
                  .init(name: "Икра", price: 1300)]
 
         $selectionForAddCheck
-            .map { [unowned self] selectedIndex -> Good in
-                goods[selectedIndex ?? 0]
+            .map { [unowned self] selectedIndex -> Good? in
+                if let index = selectedIndex, goods.indices.contains(index) {
+                    return goods[index]
+                }
+                return nil
             }
             .filter {
-                $0.price < 1000
+                if let good = $0 {
+                    good.price < 1000
+                } else {
+                    false
+                }
             }
             .sink { [unowned self] value in
-                checkGoods.append(value)
+                if let good = value {
+                    checkGoods.append(good)
+                }
             }
             .store(in: &validationCancellables)
 
         $selectionForRemoveCheck
             .sink { [unowned self] selectedIndex in
-                checkGoods.remove(at: selectedIndex ?? 0)
+                if let index = selectedIndex, goods.indices.contains(index) {
+                    if let indexCart = checkGoods.firstIndex(where: { $0.name == goods[index].name }) {
+                    checkGoods.remove(at: indexCart)
+                    }
+                }
             }
             .store(in: &validationCancellables)
 
         $checkGoods
             .map { $0.reduce(0) { $0 + $1.price } }
             .scan(0) { total, newSubtotal in
-                100 + newSubtotal
+                newSubtotal == 0 ? 0 : newSubtotal + 100
             }
             .assign(to: \.checkSum, on: self)
             .store(in: &validationCancellables)

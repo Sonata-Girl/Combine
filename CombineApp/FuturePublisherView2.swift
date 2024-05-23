@@ -10,22 +10,31 @@ import Combine
 
 struct FuturePublisherView2: View {
 
-    @StateObject private var viewModel = FuturePublisherViewModel()
+    @StateObject private var viewModel = FuturePublisherViewModel2()
 
     var body: some View {
         VStack(spacing: 20) {
             Text("\(viewModel.firstResult)")
             Button("Запуск") {
-                viewModel.fetch()
+                viewModel.runAgain()
             }
+
+            Text(viewModel.secondResult)
+                .font(.title)
+                .onAppear {
+                    viewModel.fetch()
+                }
         }
     }
 }
 
 final class FuturePublisherViewModel2: ObservableObject {
     @Published var firstResult = ""
-    var cancellable: AnyCancellable?
-
+    @Published var secondResult = ""
+    //    let futurePublisher = Future<String, Never> { promise in
+    //        promise(.success("FuturePublisher сработал"))
+    //        print("FuturePublisher сработал")
+    //    }
     let futurePublisher = Deferred {
         Future<String, Never> { promise in
             promise(.success("FuturePublisher сработал"))
@@ -37,28 +46,14 @@ final class FuturePublisherViewModel2: ObservableObject {
 
     }
 
-    func createFetch(url: URL) -> AnyPublisher<String?, Error> {
-        Future { promise in
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                if let error = error {
-                    promise(.failure(error))
-                    return
-                }
-                promise(.success(response?.url?.absoluteString ?? ""))
-            }
-            task.resume()
-        }
-        .eraseToAnyPublisher()
+    func fetch() {
+        futurePublisher
+            .assign(to: &$firstResult)
     }
 
-    func fetch() {
-        guard let url = URL(string: "https://google.com") else { return }
-        cancellable = createFetch(url: url)
-            .receive(on: RunLoop.main)
-            .sink { completion in
-                print(completion)
-            } receiveValue: { [unowned self] value in
-                firstResult = value ?? ""
-            }
+    func runAgain() {
+        futurePublisher
+            .assign(to: &$secondResult)
     }
+
 }

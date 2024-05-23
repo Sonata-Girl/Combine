@@ -8,73 +8,52 @@
 import SwiftUI
 import Combine
 
-struct FailPublisherView: View {
+struct FuturePublisherView: View {
 
-    @StateObject private var viewModel = FailPublisherViewModel()
+    @StateObject private var viewModel = FuturePublisherViewModel()
 
     var body: some View {
-        VStack {
-            Text("\(viewModel.age)")
-                .font(.title)
-                .foregroundStyle(.green)
-                .padding()
-            TextField("Введите возраст", text:  $viewModel.text)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .padding()
+        VStack(spacing: 20) {
+            Text("\(viewModel.firstResult)")
+            Button("Запуск") {
+                viewModel.runAgain()
+            }
 
-            Button("Save") {
-                viewModel.save()
-            }
-            .alert(item: $viewModel.error) { error in
-                Alert(title: Text("Ошибка"), message: Text(error.rawValue))
-            }
+            Text(viewModel.secondResult)
+                .font(.title)
+                .onAppear {
+                    viewModel.fetch()
+                }
         }
     }
 }
 
-enum InvalidAgeError: String, Error, Identifiable {
-    var id: String { rawValue }
-    case lessZero = "Значение не может быть меньше нуля"
-    case moreHundred = "Значение не может быть больше 100"
-}
-
-final class FailPublisherViewModel: ObservableObject {
-    @Published var text = ""
-    @Published var age = 0
-    @Published var error: InvalidAgeError?
+final class FuturePublisherViewModel: ObservableObject {
+    @Published var firstResult = ""
+    @Published var secondResult = ""
+    //    let futurePublisher = Future<String, Never> { promise in
+    //        promise(.success("FuturePublisher сработал"))
+    //        print("FuturePublisher сработал")
+    //    }
+    let futurePublisher = Deferred {
+        Future<String, Never> { promise in
+            promise(.success("FuturePublisher сработал"))
+            print("FuturePublisher сработал")
+        }
+    }
 
     init() {
 
     }
 
-    func save() {
-        // подчеркивание это значит что мы не хотим использовать какую любо подписку
-        _ = validationPublisher(age: Int(text) ?? -1)
-            .sink { completion in
-                switch completion {
-                    case .failure(let error):
-                        self.error = error
-                    case .finished:
-                        break
-                }
-            } receiveValue: { [unowned self] value in
-                self.age = value
-            }
+    func fetch() {
+        futurePublisher
+            .assign(to: &$firstResult)
     }
 
-    func validationPublisher(age: Int) -> AnyPublisher<Int, InvalidAgeError> {
-        if age < 0 {
-            return Fail(error: InvalidAgeError.lessZero)
-                .eraseToAnyPublisher()
-        } else if age > 100 {
-            return Fail(error: InvalidAgeError.moreHundred)
-                .eraseToAnyPublisher()
-        }
-
-        return Just(age)
-        // из Never в Just делает определенный тип ошибки
-            .setFailureType(to: InvalidAgeError.self)
-            .eraseToAnyPublisher()
+    func runAgain() {
+        futurePublisher
+            .assign(to: &$secondResult)
     }
+
 }

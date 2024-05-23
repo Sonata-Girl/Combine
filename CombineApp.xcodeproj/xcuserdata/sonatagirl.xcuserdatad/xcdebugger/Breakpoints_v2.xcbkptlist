@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "EA72CA5E-79EC-417E-BDE0-47F068346B75"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0FA6893D-5E11-4DEB-B3E3-3EF7272066FC"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CombineApp/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "96"
+            endingLineNumber = "96">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9D383745-A29A-4841-AF15-1620B60E6552"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CombineApp/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "103"
+            endingLineNumber = "103">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F39FBF24-B18C-4570-A295-5D9C3E6CBD37"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CombineApp/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "84"
+            endingLineNumber = "84"
+            landmarkName = "FailPublisher2ViewModel"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "F39FBF24-B18C-4570-A295-5D9C3E6CBD37 - 446e3dbc84cbc1e7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Optional&lt;Swift.Int&gt;) -&gt; Swift.Optional&lt;CombineApp.Good&gt; in CombineApp.MagazineViewModel.init() -&gt; CombineApp.MagazineViewModel"
+                  moduleName = "CombineApp"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/sonatagirl/SwiftIOS/_WorkProjects/TheSwiftDevelopers/Projects/CombineApp/CombineApp/ContentView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "90"
+                  endingLineNumber = "90"
+                  offsetFromSymbolStart = "72">
+               </Location>
+               <Location
+                  uuid = "F39FBF24-B18C-4570-A295-5D9C3E6CBD37 - 446e3dbc84cbc1e7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Optional&lt;Swift.Int&gt;) -&gt; Swift.Optional&lt;CombineApp.Good&gt; in CombineApp.MagazineViewModel.init() -&gt; CombineApp.MagazineViewModel"
+                  moduleName = "CombineApp"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/sonatagirl/SwiftIOS/_WorkProjects/TheSwiftDevelopers/Projects/CombineApp/CombineApp/ContentView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "90"
+                  endingLineNumber = "90"
+                  offsetFromSymbolStart = "120">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

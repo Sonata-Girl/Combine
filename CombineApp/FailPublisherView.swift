@@ -1,24 +1,14 @@
 //
-//  ContentView.swift
+//  FailPublisherView.swift
 //  CombineApp
 //
-//  Created by Sonata Girl on 20.05.2024.
+//  Created by Sonata Girl on 23.05.2024.
 //
 
 import SwiftUI
 import Combine
 
-struct ContentView: View {
-    var body: some View {
-        FailPublisherView()
-    }
-}
-
-#Preview {
-    ContentView()
-}
-
-struct FailPublisher2View: View {
+struct FailPublisherView: View {
 
     @StateObject private var viewModel = FailPublisherViewModel()
 
@@ -43,7 +33,13 @@ struct FailPublisher2View: View {
     }
 }
 
-final class FailPublisher2ViewModel: ObservableObject {
+enum InvalidAgeError: String, Error, Identifiable {
+    var id: String { rawValue }
+    case lessZero = "Значение не может быть меньше нуля"
+    case moreHundred = "Значение не может быть больше 100"
+}
+
+final class FailPublisherViewModel: ObservableObject {
     @Published var text = ""
     @Published var age = 0
     @Published var error: InvalidAgeError?
@@ -77,7 +73,7 @@ final class FailPublisher2ViewModel: ObservableObject {
         }
 
         return Just(age)
-            // из Never в Just делает определенный тип ошибки
+        // из Never в Just делает определенный тип ошибки
             .setFailureType(to: InvalidAgeError.self)
             .eraseToAnyPublisher()
     }

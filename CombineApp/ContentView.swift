@@ -10,7 +10,7 @@ import Combine
 
 struct ContentView: View {
     var body: some View {
-        FailPublisherView()
+        Task7PublishersView()
     }
 }
 
@@ -18,67 +18,131 @@ struct ContentView: View {
     ContentView()
 }
 
-struct FailPublisher2View: View {
+struct Task7PublishersView: View {
 
-    @StateObject private var viewModel = FailPublisherViewModel()
+    @StateObject private var viewModel = Task7PublishersViewModel()
+    @State var textFieldString: String = ""
 
     var body: some View {
         VStack {
-            Text("\(viewModel.age)")
-                .font(.title)
-                .foregroundStyle(.green)
-                .padding()
-            TextField("Введите возраст", text:  $viewModel.text)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .padding()
-
-            Button("Save") {
-                viewModel.save()
+            VStack {
+                Spacer()
+                TextField("Введите число", text: $viewModel.inputText.value)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                HStack {
+                    if viewModel.isButtonVisible {
+                        Button("Добавить") {
+                            viewModel.addNumber()
+//                            viewModel.selectionForAddWord.value = viewModel.inputText.value
+                        }
+                    } else {
+                        Text("Добавить")
+                            .foregroundStyle(.gray)
+                    }
+                    Button("Очистить список") {
+                        viewModel.clearList()
+                    }
+                }
+                if let error = viewModel.error?.rawValue {
+                    Text(error)
+                        .foregroundStyle(.red)
+                }
             }
-            .alert(item: $viewModel.error) { error in
-                Alert(title: Text("Ошибка"), message: Text(error.rawValue))
+            .background(.white)
+            .frame(height: 150)
+            VStack {
+                List(viewModel.dataToView.value, id: \.self) { item in
+                    Text("\(item)")
+                }
             }
+            .background(Color(uiColor: .lightGray))
+            Spacer()
         }
     }
 }
 
-final class FailPublisher2ViewModel: ObservableObject {
-    @Published var text = ""
-    @Published var age = 0
-    @Published var error: InvalidAgeError?
+enum InvalidIntError: String, Error, Identifiable {
+    var id: String { rawValue }
+    case isNotInt = "Введенное значение не является числом"
+}
+
+final class Task7PublishersViewModel: ObservableObject {
+    
+    @Published var isButtonVisible = false
+    @Published var error: InvalidIntError?
+    var selectionForAddWord = CurrentValueSubject<String, Never>("")
+    var inputText = CurrentValueSubject<String, Never>("")
+    var dataToView = CurrentValueSubject<[String], Never>([])
+
+    var datas: [String?] = []
+    var cancellable: Set<AnyCancellable> = []
 
     init() {
-
+        inputText
+            .map { newValue -> Bool in
+                newValue.isEmpty ? false : true
+            }
+            .sink { [unowned self] value in
+                self.isButtonVisible = value
+            }
+            .store(in: &cancellable)
     }
 
-    func save() {
-        // подчеркивание это значит что мы не хотим использовать какую любо подписку
-        _ = validationPublisher(age: Int(text) ?? -1)
+    func fetch() {
+        _ = datas.publisher
+            .flatMap { item -> AnyPublisher<String, Never> in
+                if let item = item {
+                    return Just(item)
+                        .eraseToAnyPublisher()
+                } else {
+                    return Empty(completeImmediately: true)
+                        .eraseToAnyPublisher()
+                }
+            }
+            .sink { [unowned self] item in
+                dataToView.value.append(item)
+            }
+    }
+
+    func addNumber() {
+        _ = validationPublisher(numberText: inputText.value)
             .sink { completion in
                 switch completion {
                     case .failure(let error):
                         self.error = error
                     case .finished:
+                        self.error = nil
                         break
                 }
             } receiveValue: { [unowned self] value in
-                self.age = value
+                datas.append(String(value))
+                dataToView.value.append(String(value))
+                inputText.value = ""
+                objectWillChange.send()
             }
     }
 
-    func validationPublisher(age: Int) -> AnyPublisher<Int, InvalidAgeError> {
-        if age < 0 {
-            return Fail(error: InvalidAgeError.lessZero)
+    func validationPublisher(numberText: String) -> AnyPublisher<String, InvalidIntError> {
+        if numberText.isEmpty {
+            return Just("")
+                .setFailureType(to: InvalidIntError.self)
                 .eraseToAnyPublisher()
-        } else if age > 100 {
-            return Fail(error: InvalidAgeError.moreHundred)
+        } else if let intNumber = Int(numberText) {
+            return Just(String(intNumber))
+            // из Never в Just делает определенный тип ошибки
+                .setFailureType(to: InvalidIntError.self)
+                .eraseToAnyPublisher()
+
+        } else {
+            return Fail(error: InvalidIntError.isNotInt)
                 .eraseToAnyPublisher()
         }
+    }
 
-        return Just(age)
-            // из Never в Just делает определенный тип ошибки
-            .setFailureType(to: InvalidAgeError.self)
-            .eraseToAnyPublisher()
+    func clearList() {
+        datas.removeAll()
+        dataToView.value.removeAll()
+        objectWillChange.send()
     }
 }

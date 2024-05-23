@@ -37,7 +37,6 @@ struct FuturePublisherTask8View: View {
 }
 
 final class FuturePublisherTask8ViewModel: ObservableObject {
-    @Published var firstResult = ""
     @Published var result = ""
     var cancellable: AnyCancellable?
     var inputText = CurrentValueSubject<String, Never>("")

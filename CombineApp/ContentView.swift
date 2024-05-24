@@ -51,6 +51,8 @@ struct CharacterDto: Decodable {
 struct Task11DataTaskPublisher: View {
 
     @StateObject private var viewModel = Task11DataTaskPublisherModel()
+    @State private var rotating = false
+    @State private var showErrorAlert = false
 
     var body: some View {
         VStack {
@@ -59,8 +61,13 @@ struct Task11DataTaskPublisher: View {
                     if viewModel.showPortal.value {
                         Image("loading")
                             .frame(width: 200, height: 200)
-                            .rotationEffect(.degrees(360))
+                            .rotationEffect(Angle(degrees: rotating ? 360 : 0))
+                            .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false), value: rotating)
                             .transition(.opacity)
+                            .onAppear {
+                                self.rotating = true
+                            }
+                            .animation(.default, value: viewModel.showPortal.value)
                     }
                 case .data:
                     if viewModel.showTable.value {
@@ -85,7 +92,6 @@ struct Task11DataTaskPublisher: View {
                                                     .foregroundStyle(.black)
                                                     .frame(width: 350, height: 40)
                                                     .padding(.zero)
-//                                                Spacer()
                                             }
                                             RoundedRectangle(cornerRadius: 10)
                                                 .foregroundStyle(.gray.opacity(0.3))
@@ -117,7 +123,11 @@ struct Task11DataTaskPublisher: View {
                         .background(.white)
                         .frame(height: 60)
             }
+
         }
+        .alert(isPresented: $showErrorAlert, content: {
+            Alert(title: Text(viewModel.alertText.value))
+        })
         .onAppear {
             viewModel.fetch()
 
@@ -139,6 +149,7 @@ final class Task11DataTaskPublisherModel: ObservableObject {
     @Published var state: ViewState<[EpisodeDto]> = .loading
     @Published var alertError: ErrorForAlert?
     @Published var dataToView: [EpisodeDto] = []
+    var alertText = CurrentValueSubject<String, Never>("")
     var showTable = CurrentValueSubject<Bool, Never>(false)
     var showPortal = CurrentValueSubject<Bool, Never>(false)
 
@@ -151,12 +162,14 @@ final class Task11DataTaskPublisherModel: ObservableObject {
             objectWillChange.send()
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            self.showPortal.value.toggle()
-            self.objectWillChange.send()
-            self.showTable.value.toggle()
-            self.objectWillChange.send()
-            self.fetch()
-            self.state = .data
+            withAnimation(.linear(duration: 2).delay(0.3)) {
+                self.showPortal.value.toggle()
+                self.objectWillChange.send()
+                self.showTable.value.toggle()
+                self.objectWillChange.send()
+                self.fetch()
+                self.state = .data
+            }
         }
     }
 
@@ -171,7 +184,7 @@ final class Task11DataTaskPublisherModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { completion in
                 if case .failure(let error) = completion {
-                    print(error.localizedDescription)
+                    self.alertText.value = error.localizedDescription
                 }
             } receiveValue: { [unowned self] episodes in
                 dataToView = episodes
@@ -192,7 +205,7 @@ final class Task11DataTaskPublisherModel: ObservableObject {
                 .receive(on: RunLoop.main)
                 .sink { completion in
                     if case .failure(let error) = completion {
-                        print(error.localizedDescription)
+                        self.alertText.value = error.localizedDescription
                     }
                 } receiveValue: { [unowned self] character in
                     dataToView[index].charName = character.name
@@ -205,9 +218,6 @@ final class Task11DataTaskPublisherModel: ObservableObject {
     }
 
     func fetchImages(url: URL, completion: @escaping (Data?) -> ()) {
-//
-//        for episode in dataToView {
-//
             URLSession.shared.dataTaskPublisher(for: url)
                 .map { $0.data }
                 .tryMap { data in
@@ -222,6 +232,5 @@ final class Task11DataTaskPublisherModel: ObservableObject {
                     completion(image)
                 }
                 .store(in: &cancellables)
-//        }
     }
 }

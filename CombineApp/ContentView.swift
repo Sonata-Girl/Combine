@@ -52,82 +52,93 @@ struct Task11DataTaskPublisher: View {
 
     @StateObject private var viewModel = Task11DataTaskPublisherModel()
     @State private var rotating = false
-    @State private var showErrorAlert = false
+
+    var errorAlertView: some View {
+        VStack {
+            Text(viewModel.alertText.value)
+                .foregroundStyle(.black)
+            Button(role: .cancel) {
+                viewModel.showErrorAlert.value.toggle()
+            } label: {
+                Text("Cancel")
+                    .foregroundStyle(.red)
+            }
+            .foregroundStyle(.blue)
+        }
+        .frame(width: 300, height: 200)
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.white)))
+        .padding(.top, 100)
+        .shadow(radius: 15)
+    }
 
     var body: some View {
-        VStack {
-            switch viewModel.state {
-                case .loading:
-                    if viewModel.showPortal.value {
-                        Image("loading")
-                            .frame(width: 200, height: 200)
-                            .rotationEffect(Angle(degrees: rotating ? 360 : 0))
-                            .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false), value: rotating)
-                            .transition(.opacity)
-                            .onAppear {
-                                self.rotating = true
-                            }
-                            .animation(.default, value: viewModel.showPortal.value)
-                    }
-                case .data:
-                    if viewModel.showTable.value {
-                        VStack(spacing: 20) {
-                            Image("logo")
-                                .frame(width: 350, height: 100)
-                            List(viewModel.dataToView.indices, id: \.self) { itemIndex in
-                                RoundedRectangle(cornerRadius: 8)
-                                    .shadow(color: .gray, radius: 10, x: 5, y: 5)
-                                    .frame(width: 350, height: 320)
-                                    .overlay(alignment: .top) {
-                                        VStack(alignment: .leading) {
-                                            Image(uiImage: (UIImage(data: viewModel.dataToView[itemIndex].imageData ?? Data()) ?? UIImage(named: "character")!))
-                                                .resizable()
-                                                .frame(width: 350, height: 200)
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .background(.white)
-                                                .overlay(alignment: .leading) {
-                                                    Text("\(viewModel.dataToView[itemIndex].charName ?? "")")
-                                                    .font(.title2)
-                                                    .bold()
-                                                    .foregroundStyle(.black)
-                                                    .frame(width: 350, height: 40)
-                                                    .padding(.zero)
-                                            }
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.gray.opacity(0.3))
-                                                .overlay(alignment: .center) {
-                                                    HStack {
-                                                        Image("iconPlay")
-                                                            .frame(width: 50, height: 50)
-                                                            .padding(.leading)
-                                                        Text("\(viewModel.dataToView[itemIndex].name) | \(viewModel.dataToView[itemIndex].episode)")
-                                                            .bold()
-                                                            .foregroundStyle(.black)
-                                                        Spacer()
-                                                        Image("heart")
-                                                            .frame(width: 50, height: 50)
-                                                            .padding(.trailing)
-                                                    }
+            VStack {
+                switch viewModel.state {
+                    case .loading:
+                            Image("loading")
+                                .frame(width: 200, height: 200)
+                                .rotationEffect(Angle(degrees: rotating ? 360 : 0))
+                                .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false), value: rotating)
+                                .transition(.opacity)
+                                .onAppear {
+                                    self.rotating = true
+                                }
+                                .animation(.default, value: viewModel.showPortal.value)
+                    case .data:
+                            VStack(spacing: 20) {
+                                Image("logo")
+                                    .frame(width: 350, height: 100)
+                                List(viewModel.dataToView.indices, id: \.self) { itemIndex in
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .shadow(color: .gray, radius: 10, x: 5, y: 5)
+                                        .frame(width: 350, height: 320)
+                                        .overlay(alignment: .top) {
+                                            VStack(alignment: .leading) {
+                                                Image(uiImage: (UIImage(data: viewModel.dataToView[itemIndex].imageData ?? Data()) ?? UIImage(named: "character")!))
+                                                    .resizable()
+                                                    .frame(width: 350, height: 200)
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .background(.white)
+                                                    .overlay(alignment: .leading) {
+                                                        Text("\(viewModel.dataToView[itemIndex].charName ?? "")")
+                                                        .font(.title2)
+                                                        .bold()
+                                                        .foregroundStyle(.black)
+                                                        .frame(width: 350, height: 40)
+                                                        .padding(.zero)
                                                 }
-                                                .frame(width: 350, height: 63)
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .foregroundStyle(.gray.opacity(0.3))
+                                                    .overlay(alignment: .center) {
+                                                        HStack {
+                                                            Image("iconPlay")
+                                                                .frame(width: 50, height: 50)
+                                                                .padding(.leading)
+                                                            Text("\(viewModel.dataToView[itemIndex].name) | \(viewModel.dataToView[itemIndex].episode)")
+                                                                .bold()
+                                                                .foregroundStyle(.black)
+                                                            Spacer()
+                                                            Image("heart")
+                                                                .frame(width: 50, height: 50)
+                                                                .padding(.trailing)
+                                                        }
+                                                    }
+                                                    .frame(width: 350, height: 63)
+                                            }
                                         }
-                                    }
 
-                            }
-                            .foregroundStyle(.white)
-                            .background(.white)
+                                }
+                                .foregroundStyle(.white)
+                                .background(.white)
                         }
-                    }
-                case .error(let error):
-                    Text(error.localizedDescription)
-                        .background(.white)
-                        .frame(height: 60)
-            }
-
+                    case .error:
+                        if viewModel.showErrorAlert.value {
+                            errorAlertView
+                                .transition(AnyTransition.opacity)
+                                .zIndex(1)
+                        }
+                }
         }
-        .alert(isPresented: $showErrorAlert, content: {
-            Alert(title: Text(viewModel.alertText.value))
-        })
         .onAppear {
             viewModel.fetch()
 
@@ -150,27 +161,27 @@ final class Task11DataTaskPublisherModel: ObservableObject {
     @Published var alertError: ErrorForAlert?
     @Published var dataToView: [EpisodeDto] = []
     var alertText = CurrentValueSubject<String, Never>("")
-    var showTable = CurrentValueSubject<Bool, Never>(false)
+    var showErrorAlert = CurrentValueSubject<Bool, Never>(false)
     var showPortal = CurrentValueSubject<Bool, Never>(false)
 
     var cancellables: Set<AnyCancellable> = []
 
     init() {
         state = .loading
-        withAnimation(.linear(duration: 4)) {
-            showPortal.value.toggle()
-            objectWillChange.send()
-        }
+        showPortal.value.toggle()
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             withAnimation(.linear(duration: 2).delay(0.3)) {
                 self.showPortal.value.toggle()
-                self.objectWillChange.send()
-                self.showTable.value.toggle()
-                self.objectWillChange.send()
                 self.fetch()
                 self.state = .data
             }
         }
+
+        showErrorAlert
+            .sink { value in
+                self.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
 
     func fetch() {
@@ -185,6 +196,10 @@ final class Task11DataTaskPublisherModel: ObservableObject {
             .sink { completion in
                 if case .failure(let error) = completion {
                     self.alertText.value = error.localizedDescription
+                    withAnimation(.linear(duration: 3)) {
+                        self.showErrorAlert.value = true
+                    }
+                    self.state = .error(error)
                 }
             } receiveValue: { [unowned self] episodes in
                 dataToView = episodes
@@ -206,6 +221,10 @@ final class Task11DataTaskPublisherModel: ObservableObject {
                 .sink { completion in
                     if case .failure(let error) = completion {
                         self.alertText.value = error.localizedDescription
+//                        withAnimation(.linear(duration: 2)) {
+//                            self.showErrorAlert.value = true
+//                        }
+//                        self.state = .error(error)
                     }
                 } receiveValue: { [unowned self] character in
                     dataToView[index].charName = character.name

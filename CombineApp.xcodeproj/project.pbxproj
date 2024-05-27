@@ -11,6 +11,7 @@
 		6728131B2BFBC940009F9AF4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6728131A2BFBC940009F9AF4 /* ContentView.swift */; };
 		6728131D2BFBC941009F9AF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6728131C2BFBC941009F9AF4 /* Assets.xcassets */; };
 		672813202BFBC941009F9AF4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6728131F2BFBC941009F9AF4 /* Preview Assets.xcassets */; };
+		672813492BFF5AF0009F9AF4 /* PassThroughSubjectTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672813482BFF5AF0009F9AF4 /* PassThroughSubjectTimerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		6728131A2BFBC940009F9AF4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6728131C2BFBC941009F9AF4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6728131F2BFBC941009F9AF4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		672813482BFF5AF0009F9AF4 /* PassThroughSubjectTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassThroughSubjectTimerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			children = (
 				672813182BFBC940009F9AF4 /* CombineAppApp.swift */,
 				6728131A2BFBC940009F9AF4 /* ContentView.swift */,
+				672813482BFF5AF0009F9AF4 /* PassThroughSubjectTimerView.swift */,
 				6728131C2BFBC941009F9AF4 /* Assets.xcassets */,
 				6728131E2BFBC941009F9AF4 /* Preview Content */,
 			);
@@ -139,6 +142,7 @@
 			files = (
 				6728131B2BFBC940009F9AF4 /* ContentView.swift in Sources */,
 				672813192BFBC940009F9AF4 /* CombineAppApp.swift in Sources */,
+				672813492BFF5AF0009F9AF4 /* PassThroughSubjectTimerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

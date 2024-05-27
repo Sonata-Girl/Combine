@@ -90,7 +90,7 @@ struct Task11DataTaskPublisher: View {
                                         .shadow(color: .gray, radius: 10, x: 5, y: 5)
                                         .frame(width: 350, height: 320)
                                         .overlay(alignment: .top) {
-                                            VStack(alignment: .leading) {
+                                            VStack {
                                                 Image(uiImage: (UIImage(data: viewModel.dataToView[itemIndex].imageData ?? Data()) ?? UIImage(named: "character")!))
                                                     .resizable()
                                                     .frame(width: 350, height: 200)

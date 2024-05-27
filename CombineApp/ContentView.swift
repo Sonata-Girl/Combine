@@ -94,16 +94,12 @@ struct Task11DataTaskPublisher: View {
                                                 Image(uiImage: (UIImage(data: viewModel.dataToView[itemIndex].imageData ?? Data()) ?? UIImage(named: "character")!))
                                                     .resizable()
                                                     .frame(width: 350, height: 200)
-                                                RoundedRectangle(cornerRadius: 10)
-                                                    .background(.white)
-                                                    .overlay(alignment: .leading) {
-                                                        Text("\(viewModel.dataToView[itemIndex].charName ?? "")")
-                                                        .font(.title2)
-                                                        .bold()
-                                                        .foregroundStyle(.black)
-                                                        .frame(width: 350, height: 40)
-                                                        .padding(.zero)
-                                                }
+                                                Text("\(viewModel.dataToView[itemIndex].charName ?? "")")
+                                                    .font(.title2)
+                                                    .bold()
+                                                    .foregroundStyle(.black)
+                                                    .frame(width: 350, height: 40, alignment: .leading)
+                                                    .padding(.leading)
                                                 RoundedRectangle(cornerRadius: 10)
                                                     .foregroundStyle(.gray.opacity(0.3))
                                                     .overlay(alignment: .center) {
